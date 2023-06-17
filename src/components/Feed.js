@@ -1,13 +1,26 @@
 import React, { useEffect, useState } from 'react'
 import { FetchFromAPI } from '../utils/FetchFromAPI';
-
+import PlaylistCard from './PlaylistCard';
+import { trackPromise, usePromiseTracker} from 'react-promise-tracker';
+import CircularProgress from '@mui/material/CircularProgress';
+import Backdrop from '@mui/material/Backdrop';
 const Feed = () => {
   // State Variables
   const [userInput, setUserInput] = useState("");
-  const [playlistId, setPlaylistId] = useState();
-  const [playlistInfo, setPlaylistInfo] = useState([])
+  const [playlistId, setPlaylistId] = useState(0);
+  const [playlistInfo, setPlaylistInfo] = useState([]);
+  const {promiseInProgress} = usePromiseTracker();
+  const [open, setOpen] = useState(false);
+ 
+  const handleClose = (event, reason) => {
 
-  console.log(playlistId);
+    if (reason === 'clickaway') {
+      return;
+    }
+
+    setOpen(false);
+  };
+
 
   // Functions
 
@@ -18,6 +31,7 @@ const Feed = () => {
 
   }
 
+
   //PlayList Data
 
   //   const getplaylistData = (playlistId)=>{
@@ -26,22 +40,24 @@ const Feed = () => {
   //    }
   //   }
 
+  const getData = async()=>{
+    await trackPromise(
+      FetchFromAPI(`playlist?part=snippet&id=${playlistId}`).then((data) => {setPlaylistInfo(data); console.log(data.data)})
+    )
+  }
 
-  useEffect(() => {
-    if (playlistId != null) {
-      FetchFromAPI(`playlist?part=snippet&id=${playlistId}`).then((data) => console.log(data));
-    }
-  }, [playlistId])
+
+
+useEffect(()=>{
+  if(playlistId != null){
+    getData();
+  }
+}, [playlistId])
+
 
 
   return (
-    <div style={{
-      "margin": "1rem",
-      "border": "2px solid black",
-      "padding": "1rem",
-      "borderRadius": "1rem",
-      "height": "50vh"
-    }}>
+    <div>
 
       <input onChange={(e) => setUserInput(e.target.value)} style={{
         "borderRadius": "0.5rem",
@@ -50,11 +66,29 @@ const Feed = () => {
         padding: "0.5rem"
       }} />
       <button onClick={() => extractPlaylistId(userInput)}>Submit</button>
+   
+      {playlistId != 0 ? <div>
+        <h3>Playlist Id : {playlistId}</h3>
+      <br />
+      
 
-      <h3>Playlist Id : {playlistId}</h3>
-      <h3>Playlist Name :  {playlistInfo.title}</h3>
+       {/* <PlaylistCard playlistInfo={playlistInfo} /> */}
 
 
+      </div> : <div>
+        <h2>Enter youtube playlist</h2>
+      </div>}
+      
+      <Backdrop
+        sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={promiseInProgress}
+        onClick={handleClose}
+      >
+        {promiseInProgress ? <div>
+          <CircularProgress color="inherit" />
+         
+        </div> : ""}
+      </Backdrop>
 
     </div>
   )
