@@ -17,7 +17,7 @@ function App() {
     }}>
        <Routes>
          <Route path='/' element={<Feed/>}  />
-         <Route path='/video/:id' element={<VideoDetail/>} />
+         <Route path='/video/:id/:playlistId' element={<VideoDetail/>} />
          <Route path='*' element={"Page Not Found"}/>
        </Routes>
        </div>

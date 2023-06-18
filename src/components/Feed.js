@@ -28,7 +28,7 @@ const Feed = () => {
   // PlayList ID
   const extractPlaylistId = (userInput) => {
     const split_video = userInput.split('list');
-    setPlaylistId(split_video[1].slice(1, 35));
+    setPlaylistId((playlistId)=>[...playlistId , split_video[1].slice(1, 35)]);
 
   }
   console.log(playlistId)
@@ -51,11 +51,11 @@ const Feed = () => {
 
 
 
-  useEffect(() => {
-    if (playlistId != null) {
-      getData();
-    }
-  }, [playlistId])
+  // useEffect(() => {
+  //   if (playlistId != null) {
+  //     getData();
+  //   }
+  // }, [playlistId])
 
 
 
@@ -77,7 +77,9 @@ const Feed = () => {
         <br />
 
 
-        {<PlaylistCard playlistInfo={playlistInfo} />}
+        {playlistId.map((pid,key)=>(
+          <PlaylistCard key={key} playlistId={pid}/>
+        ))}
 
 
       </div> : <div>
