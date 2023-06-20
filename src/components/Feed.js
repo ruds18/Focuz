@@ -4,6 +4,7 @@ import PlaylistCard from './PlaylistCard';
 import { trackPromise, usePromiseTracker } from 'react-promise-tracker';
 import CircularProgress from '@mui/material/CircularProgress';
 import Backdrop from '@mui/material/Backdrop';
+import axios from 'axios';
 const Feed = () => {
   // State Variables
   const [userInput, setUserInput] = useState("");
@@ -11,6 +12,7 @@ const Feed = () => {
   const [playlistInfo, setPlaylistInfo] = useState([]);
   const { promiseInProgress } = usePromiseTracker();
   const [open, setOpen] = useState(false);
+  const [dupPlay, setDubPlay] = useState([])
 
 
   const handleClose = (event, reason) => {
@@ -28,10 +30,12 @@ const Feed = () => {
   // PlayList ID
   const extractPlaylistId = (userInput) => {
     const split_video = userInput.split('list');
-    setPlaylistId((playlistId)=>[...playlistId , split_video[1].slice(1, 35)]);
-
+    const id = split_video[1].slice(1, 35)
+    setDubPlay((dupPlay)=>[...dupPlay, id])
+    setPlaylistId((playlistId)=>[...playlistId , id]);
+    addToDB(id);
   }
-  console.log(playlistId)
+  
   
 
 
@@ -43,11 +47,40 @@ const Feed = () => {
   //    }
   //   }
 
-  const getData = async () => {
-    await trackPromise(
-      FetchFromAPI(`playlist?part=snippet&id=${playlistId}`).then((data) => { setPlaylistInfo(data); console.log(data.data) })
-    )
+  // const getData = async () => {
+  //   await trackPromise(
+  //     FetchFromAPI(`playlist?part=snippet&id=${playlistId}`).then((data) => { setPlaylistInfo(data); console.log(data.data) })
+  //   )
+  // }
+
+  const addToDB = async(listId)=>{
+    try{
+      await trackPromise(
+        axios.post(`http://localhost:8080/insert` , {info : listId})
+      );
+      console.log("Inside DB");
+    }
+    catch(error){
+      console.log(error)
+    }
   }
+
+  const getData = async()=>{
+    try{
+      await trackPromise(axios.get('http://localhost:8080/read')).then((response)=>{
+        console.log(response.data          );
+        setPlaylistId(response.data)
+      })
+    }
+    catch(error){
+      console.log(error)
+    }
+    
+  }
+
+  useEffect(()=>{
+     getData();
+  },[dupPlay])
 
 
 
@@ -70,21 +103,24 @@ const Feed = () => {
         "width": "50%",
         padding: "0.5rem"
       }} />
-      <button onClick={() => extractPlaylistId(userInput)}>Submit</button>
+      <button onClick={()=>extractPlaylistId(userInput)}>Submit</button>
 
-      {playlistId !== 0 ? <div>
-        <h3>Playlist Id : {playlistId}</h3>
+      {playlistId !== 0 ? (
+  <div>
+    {playlistId.map((pid, key) => (
+      <div key={key}>
+        <h3>Playlist Id: {pid.playListID}</h3>
         <br />
+        <PlaylistCard playlistId={pid.playListID} />
+      </div>
+    ))}
+  </div>
+) : (
+  <div>
+    <h2>Enter YouTube playlist</h2>
+  </div>
+)}
 
-
-        {playlistId.map((pid,key)=>(
-          <PlaylistCard key={key} playlistId={pid}/>
-        ))}
-
-
-      </div> : <div>
-        <h2>Enter youtube playlist</h2>
-      </div>}
 
       <Backdrop
         sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }}

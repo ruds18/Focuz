@@ -6,7 +6,7 @@ const options ={
   url : BASE_URL,
   params: {geo: 'US', lang: 'en'},
   headers: {
-    'X-RapidAPI-Key': '8f77546800msh0e1c359299d22aap162e6bjsna1e49a2e2983',
+    'X-RapidAPI-Key': '7517f52af2mshdf48e2166a4bc79p10b112jsn7b38e23ed608',
     'X-RapidAPI-Host': 'youtube-v3-alternative.p.rapidapi.com'
   }
 };
